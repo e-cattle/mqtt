@@ -1,9 +1,10 @@
 import json
-import redis
-import requests
+from datetime import datetime
+
 import paho.mqtt.publish as publish
 import paho.mqtt.subscribe as subscribe
-from datetime import datetime
+import redis
+import requests
 
 data = {
     "mac": "",
@@ -56,15 +57,24 @@ def get_message(message):
         data["mac"] = sensor[1]
         data["token"] = r.get(sensor[1])
         data["measures"]["name"] = sensor[2]
-        data["measures"]["value"] = str(message.payload.decode("utf-8"))
         data["measures"]["date"] = get_date()
+
+        # Possui resource
         if len(sensor) == 4:
             data["measures"]["resource"] = sensor[3]
+
+        # É Json
+        msg = str(message.payload.decode("utf-8"))
+        if msg.replace('.', '', 1).isdigit():
+            data["measures"]["value"] = msg
         else:
-            data["measures"]["resource"] = ""
+            data.update(dict(msg))
 
         # POST de Dados
         result = session.post(str(api) + "measures", data=json.dumps(data))
+
+        # Apaga conteudo Json
+        data.clear()
 
         # HTTP Codes API
         # 201 - Mensagem processada com sucesso
