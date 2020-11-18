@@ -22,6 +22,8 @@ api_port = 3000
 api = f"http://{bigboxx}:{api_port}/"
 r = redis.Redis(host=bigboxx)
 
+response_topic = "Embrapa/Response/"
+
 session = requests.Session()
 
 
@@ -43,13 +45,13 @@ def get_message(message):
         contract = json.loads(message.payload.decode("utf-8"))
 
         # POST de requisição do contrato
-        result = session.post(str(api) + "devices", data=contract)
+        result = session.post(api + "devices", data=contract)
 
         # Guarda o Token gerado no banco REDIS
         r.mset({sensor[2]: "TOKEN"})
 
         # Informa o HTTP Status Code da requisição de contrato
-        publish.single("Embrapa/Response/" + sensor[2], result.status_code, hostname=bigboxx)
+        publish.single(response_topic + sensor[2], result.status_code, hostname=bigboxx)
 
     # Embrapa/aa:bb:cc:11:22:33/sensor_name/resource
     else:
@@ -71,7 +73,7 @@ def get_message(message):
             data.update(dict(msg))
 
         # POST de Dados
-        result = session.post(str(api) + "measures", data=json.dumps(data))
+        result = session.post(api + "measures", data=json.dumps(data))
 
         # Apaga conteudo Json
         data.clear()
@@ -83,7 +85,7 @@ def get_message(message):
         # 500 - Erro de processamento
         # Se contrato for inválido, informa o sensor
         if not result.status_code == 201:
-            publish.single("Embrapa/Response/" + sensor[1], result.status_code, hostname=bigboxx)
+            publish.single(response_topic + sensor[1], result.status_code, hostname=bigboxx)
 
 
 def on_message(client, userdata, message):
