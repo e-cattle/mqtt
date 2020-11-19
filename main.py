@@ -23,6 +23,7 @@ api = f"http://{bigboxx}:{api_port}/"
 r = redis.Redis(host=bigboxx)
 
 response_topic = "Embrapa/Response/"
+subscribe_topic = "#"
 
 session = requests.Session()
 
@@ -94,4 +95,4 @@ def on_message(client, userdata, message):
 
 if __name__ == '__main__':
     while True:
-        subscribe.callback(on_message, "#", hostname=bigboxx)
+        subscribe.callback(on_message, subscribe_topic, hostname=bigboxx)
