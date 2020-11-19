@@ -70,7 +70,7 @@ def get_message(message):
         if msg.replace('.', '', 1).isdigit():
             data["measures"]["value"] = msg
         else:
-            data.update(dict(msg))
+            data["measures"].update(dict(msg))
 
         # POST de Dados
         result = session.post(api + "measures", data=json.dumps(data))
