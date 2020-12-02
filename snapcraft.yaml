@@ -9,12 +9,13 @@ description: |
 grade: devel
 confinement: devmode
 
+apps:
+  mqtt-driver:
+    command: python3 /home/ubuntu/mysnaps/bin/mqtt-driver
+
 parts:
   mqtt-driver:
     plugin: python
     python-version: python3
     source: .
-
-apps:
-  mqtt-driver:
-    command: python3 mqtt-driver
+    requirements: ['requirements.txt']
