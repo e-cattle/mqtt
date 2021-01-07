@@ -11,11 +11,15 @@ confinement: devmode
 
 apps:
   mqtt-driver:
-    command: python3 /home/ubuntu/mysnaps/bin/mqtt-driver
+    command: bin/mqtt-driver.py
+    plugs: [network,network-bind,mount-observe,network-observe,system-observe]
 
 parts:
   mqtt-driver:
     plugin: python
     python-version: python3
     source: .
-    requirements: ['requirements.txt']
+    python-packages:
+      - paho-mqtt
+      - requests
+      - redis
