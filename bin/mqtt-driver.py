@@ -20,6 +20,7 @@ data = {
 }
 
 bigboxx = "192.168.0.11"
+# bigboxx = "127.0.0.1"
 api_port = 3000
 api = f"http://{bigboxx}:{api_port}/"
 rdb = redis.Redis(host=bigboxx)
@@ -34,6 +35,14 @@ headers = {'Content-Type': 'application/json'}
 def get_date():
     now = datetime.now()
     return str(now.strftime("%d%m%y%H%M%S"))
+
+
+def is_json(myjson):
+    try:
+        json_obj = json.loads(myjson)
+        return True
+    except ValueError as e:
+        return False
 
 
 def get_message(message):
@@ -51,12 +60,8 @@ def get_message(message):
         # POST de requisição do contrato
         response = session.post(api + "device", headers=headers, data=json.dumps(contract))
 
-        if response.status_code == 201:
-            # Guarda o Token gerado no banco REDIS
-            tk = json.loads(response.text)
-            rdb.mset({sensor[2]: tk["token"]})
-        else:
-            print(response.text)
+        tk = json.loads(response.text)
+        rdb.mset({sensor[2]: tk["token"]})
 
         # Informa o HTTP Status Code da requisição de contrato
         publish.single(response_topic + sensor[2], response.status_code, hostname=bigboxx)
@@ -68,6 +73,7 @@ def get_message(message):
         # Atualiza o JSON de dados
         data["mac"] = sensor[1]
         token = rdb.get(sensor[1])
+
         if token.__str__() == 'None':
             data["token"] = "Null"
         else:
@@ -81,10 +87,10 @@ def get_message(message):
 
         # É Json
         msg = str(message.payload.decode("utf-8"))
-        if msg.replace('.', '', 1).isdigit():
-            data["measures"][0]["value"] = msg
-        else:
+        if is_json(msg) and isinstance(msg, float):
             data["measures"][0].update(json.loads(msg))
+        else:
+            data["measures"][0]["value"] = msg
 
         # POST de Dados
         response = session.post(api + "measure", headers=headers, data=json.dumps(data))
@@ -109,4 +115,3 @@ def on_message(client, userdata, message):
 if __name__ == '__main__':
     while True:
         subscribe.callback(on_message, subscribe_topic, hostname=bigboxx)
-
