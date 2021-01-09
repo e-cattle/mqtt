@@ -1,6 +1,6 @@
 name: bigboxx-mqtt
 base: core18
-version: '0.1'
+version: git
 summary: MQTT driver for BigBoxx
 description: |
   e-Cattle BigBoxx is a middleware to receive, rank, segment, persist and provide sensory data
