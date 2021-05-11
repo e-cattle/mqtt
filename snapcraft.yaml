@@ -12,6 +12,8 @@ confinement: devmode
 apps:
   mqtt-driver:
     command: bin/mqtt-driver.py
+    daemon: simple
+    restart-condition: always 
     plugs: [network,network-bind,mount-observe,network-observe,system-observe]
 
 parts:
